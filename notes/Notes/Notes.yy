@@ -1,0 +1,11 @@
+{
+  "$GMNotes":"",
+  "%Name":"Notes",
+  "name":"Notes",
+  "parent":{
+    "name":"msdf",
+    "path":"msdf.yyp",
+  },
+  "resourceType":"GMNotes",
+  "resourceVersion":"2.0",
+}

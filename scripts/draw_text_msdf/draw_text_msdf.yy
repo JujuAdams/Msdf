@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"draw_text_msdf",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"draw_text_msdf",
+  "parent":{
+    "name":"snake_case",
+    "path":"folders/MSDF/snake_case.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

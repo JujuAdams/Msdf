@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"sMSDFTest_official",
+  "name":"sMSDFTest_official",
+  "parent":{
+    "name":"msdf",
+    "path":"msdf.yyp",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

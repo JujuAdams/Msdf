@@ -1,0 +1,2 @@
+1. Download msdf-atlas-gen from https://github.com/Chlumsky/msdf-atlas-gen/releases
+2. Download execute_shell_simple from https://yellowafterlife.itch.io/gamemaker-execute-shell-simple

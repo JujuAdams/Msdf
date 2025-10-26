@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"shdPassthrough",
+  "name":"shdPassthrough",
+  "parent":{
+    "name":"msdf",
+    "path":"msdf.yyp",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

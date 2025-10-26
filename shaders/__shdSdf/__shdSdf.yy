@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"__shdSdf",
+  "name":"__shdSdf",
+  "parent":{
+    "name":"(System)",
+    "path":"folders/MSDF/(System).yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

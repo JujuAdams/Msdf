@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"MsdfDrawText",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"MsdfDrawText",
+  "parent":{
+    "name":"MSDF",
+    "path":"folders/MSDF.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
