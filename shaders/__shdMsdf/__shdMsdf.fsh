@@ -22,8 +22,8 @@ void main()
         baseDist = median(sample.rgb);
     }
     
-    float spread = max(fwidth(baseDist), 0.001);
-    float alpha = smoothstep(0.5 - SMOOTHNESS*spread, 0.5 + SMOOTHNESS*spread, baseDist);
+    float spread = max(SMOOTHNESS*fwidth(baseDist), 0.001);
+    float alpha = smoothstep(0.5 - spread, 0.5 + spread, baseDist);
     
     gl_FragColor = vec4(v_vColour.rgb, alpha*v_vColour.a);
 }

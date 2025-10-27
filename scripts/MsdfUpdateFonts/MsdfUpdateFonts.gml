@@ -228,7 +228,13 @@ function MsdfUpdateFonts()
         
         __MsdfTrace($"Waiting for batch file to finish ...");
         var _time = current_time;
-        while(current_time - _time < 1500){}
+        while((not file_exists(_jsonOutPath)) || (not file_exists(_imageOutPath)))
+        {
+            if (current_time - _time > 10_000)
+            {
+                __MsdfError("Batch file timed out");
+            }
+        }
         
         __MsdfTrace($"Loading MSDF JSON");
         var _newYYString = _yyString;
@@ -335,10 +341,10 @@ function MsdfUpdateFonts()
     //Report state
     if (_warnings > 0)
     {
-        __MsdfTrace($"`MsdfUpdateFonts()` finished but with {_warnings} warning(s), please review your debug log");
+        __MsdfTrace($"`MsdfUpdateFonts()` finished ({(get_timer() - _time) / 1000} ms) but with {_warnings} warning(s), please review your debug log");
     }
     else
     {
-        __MsdfTrace("`MsdfUpdateFonts()` finished successfully with no warnings");
+        __MsdfTrace($"`MsdfUpdateFonts()` finished ({(get_timer() - _time) / 1000} ms) successfully with no warnings");
     }
 }

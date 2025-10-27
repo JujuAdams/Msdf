@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"MsdfSetShader",
   "parent":{
-    "name":"MSDF",
-    "path":"folders/MSDF.yy",
+    "name":"Functions",
+    "path":"folders/MSDF/Functions.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
