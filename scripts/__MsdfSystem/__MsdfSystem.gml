@@ -1,5 +1,7 @@
 // Feather disable all
 
+#macro __MSDF_DPI_GM_TO_NORMATIVE  (4/3)
+
 __MsdfSystem();
 
 function __MsdfSystem()

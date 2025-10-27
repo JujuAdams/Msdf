@@ -1,11 +1,5 @@
 // Feather disable all
 
-#macro MSDF_DOWNSCALE            (1/2)
-#macro MSDF_DPI_GM_TO_NORMATIVE  (4/3)
-#macro MSDF_DPI_NORMATIVE_TO_GM  (3/4)
-#macro MSDF_ATLAS_FIX  1
-#macro MSDF_ATLAS_TRIM  0
-
 function MsdfUpdateFonts()
 {
     var _time = get_timer();
@@ -60,9 +54,22 @@ function MsdfUpdateFonts()
         {
             __MsdfTrace($"Font \"{font_get_name(_font)}\" ({_font}) was added at runtime and will be ignored");
         }
-        else if (font_get_sdf_enabled(_font)) //We're not worried about SDF fonts
+        else if (not font_get_sdf_enabled(_font)) //We're not worried about SDF fonts
         {
-            __MsdfTrace($"Font \"{font_get_name(_font)}\" ({_font}) is an SDF font and will be ignored");
+            if (array_get_index(_msdfFontArray, _font) >= 0)
+            {
+                __MsdfTrace($"Warning! Font \"{font_get_name(_font)}\" ({_font}) is *not* an SDF font but is tagged with \"msdf\". This font will be ignored");
+                ++_warnings;
+            }
+            else
+            {
+                __MsdfTrace($"Font \"{font_get_name(_font)}\" ({_font}) is not an SDF font and will be ignored");
+            }
+        }
+        else if (array_get_index(_msdfFontArray, _font) < 0)
+        {
+            __MsdfTrace($"Warning! Font \"{font_get_name(_font)}\" ({_font}) is an SDF font but is *not* tagged with \"msdf\". This font will be ignored");
+            ++_warnings;
         }
         else
         {
@@ -103,36 +110,40 @@ function MsdfUpdateFonts()
     var _i = 0;
     repeat(array_length(_msdfFontArray))
     {
-        __MsdfTrace($"Converting font \"{font_get_name(_font)}\" to Msdf");
-        
         var _font = _msdfFontArray[_i];
         var _fontName = font_get_name(_font);
         var _fontInfo = font_get_info(_font);
         
+        __MsdfTrace($"Converting font \"{_fontName}\" to Msdf");
+        
         var _fontPointSize = _fontInfo.size;
         __MsdfTrace($"GameMaker point size is {_fontPointSize}");
         
-        var _writePointSize = MSDF_DOWNSCALE*MSDF_DPI_GM_TO_NORMATIVE*_fontPointSize;
+        var _writePointSize = __MSDF_DPI_GM_TO_NORMATIVE*_fontPointSize;
         __MsdfTrace($"Equivalent normative point size is {_writePointSize}");
+        
+        var _gmAscender = _fontInfo.ascender;
+        __MsdfTrace($"GameMaker ascender is {_gmAscender}");
         
         var _fontOriginName = _fontInfo.name;
         __MsdfTrace($"Font name is \"{_fontOriginName}\"");
         
         var _cleanFontOriginName = filename_name(_fontOriginName);
         var _ttfPath = $"{_msdfGenDirectory}{_cleanFontOriginName}.ttf";
+        var _path0 = _ttfPath;
         if (not file_exists(_ttfPath))
         {
             __MsdfTrace($"Could not find .ttf at \"{_ttfPath}\"");
             
-            _ttfPath = $"{_msdfGenDirectory}{string_lower(_cleanFontOriginName)}.ttf";
+            _ttfPath = $"{_msdfGenDirectory}{string_replace_all(_cleanFontOriginName, " ", "_")}.ttf";
+            var _path1 = _ttfPath;
             if (not file_exists(_ttfPath))
             {
-                __MsdfTrace($"Could not find .ttf at \"{_ttfPath}\"");
-                _ttfPath = $"{_msdfGenDirectory}{string_upper(_cleanFontOriginName)}.ttf";
-            
+                _ttfPath = $"{_msdfGenDirectory}{string_replace_all(_cleanFontOriginName, "_", " ")}.ttf";
+                var _path2 = _ttfPath;
                 if (not file_exists(_ttfPath))
                 {
-                    __MsdfError($"Could not find .ttf in \"{_msdfGenDirectory}\". Looked for:\n- {_ttfPath}\n- {string_lower(_ttfPath)}\n- {string_upper(_ttfPath)}");
+                    __MsdfError($"Could not find .ttf in \"{_msdfGenDirectory}\". Looked for:\n- {_path0}\n- {_path1}\n- {_path2}\nPlease rename the source .ttf file accordingly.");
                 }
             }
         }
@@ -171,20 +182,19 @@ function MsdfUpdateFonts()
         var _fontSdfSpread = _yyJSON.sdfSpread;
         __MsdfTrace($"GameMaker SDF spread is {_fontSdfSpread}");
         
-        var _writePxRange = MSDF_DOWNSCALE*MSDF_DPI_GM_TO_NORMATIVE*_fontSdfSpread;
-        _writePxRange /= 2; //GM also uses an SDF spread that's 2x too big
-        __MsdfTrace($"Equivalent normative MSDF spread (after downscaling) is {_writePxRange}");
+        var _writePxRange = 2*_fontSdfSpread;
+        __MsdfTrace($"Equivalent MSDF spread is {_writePxRange}");
         
         buffer_seek(_stringBuffer, buffer_seek_start, 0);
         
-        var _glyphsDict = _fontInfo.glyphs;
-        var _glyphArray = struct_get_names(_glyphsDict);
-        __MsdfTrace($"Found {array_length(_glyphArray)} glyphs, building hexcode arguments");
+        var _gmGlyphsDict = _fontInfo.glyphs;
+        var _gmGlyphsArray = struct_get_names(_gmGlyphsDict);
+        __MsdfTrace($"Found {array_length(_gmGlyphsArray)} glyphs, building hexcode arguments");
         
         var _i = 0;
-        repeat(array_length(_glyphArray))
+        repeat(array_length(_gmGlyphsArray))
         {
-            var _glyphChar = _glyphArray[_i];
+            var _glyphChar = _gmGlyphsArray[_i];
             buffer_write(_stringBuffer, buffer_text, "0x");
             buffer_write(_stringBuffer, buffer_text, string_trim_start(string(ptr(ord(_glyphChar))), _zeroSubstring));
             buffer_write(_stringBuffer, buffer_text, ",");
@@ -220,7 +230,7 @@ function MsdfUpdateFonts()
         var _time = current_time;
         while(current_time - _time < 1500){}
         
-        __MsdfTrace($"Converting MSDF data format to GameMaker data format");
+        __MsdfTrace($"Loading MSDF JSON");
         var _newYYString = _yyString;
         
         if (not file_exists(_jsonOutPath))
@@ -248,166 +258,70 @@ function MsdfUpdateFonts()
             __MsdfError($"Failed to parse JSON found in \"{_jsonOutPath}\"");
         }
         
-        var _msdfPointSize      = _msdfJSON.atlas.size;
-        var _msdfRange          = _msdfJSON.atlas.distanceRange;
-        var _msdfHeight         = round(_fontPointSize*_msdfJSON.metrics.lineHeight);
-        var _msdfAscenderOffset = -ceil(_fontPointSize*(_msdfJSON.metrics.lineHeight + _msdfJSON.metrics.ascender));
+        var _msdfPointSize = _msdfJSON.atlas.size;
+        var _msdfRange     = _msdfJSON.atlas.distanceRange;
+        var _msdfAscender  = -ceil(_fontPointSize*_msdfJSON.metrics.ascender);
         __MsdfTrace($"MSDF point size is {_msdfPointSize}");
         __MsdfTrace($"MSDF range is {_msdfRange}");
-        __MsdfTrace($"MSDF line height is {_msdfHeight}");
-        __MsdfTrace($"MSDF equivalent ascender offset is {_msdfAscenderOffset}");
+        __MsdfTrace($"MSDF ascender is {_msdfAscender}");
         
-        __MsdfTrace("Generating new glyph data");
+        __MsdfTrace($"Loading existing GameMaker texture");
+        
+        var _sprite = sprite_add($"{_fontDirectory}{_fontName}.png", 0, false, false, 0, 0);
+        var _surface = surface_create(sprite_get_width(_sprite), sprite_get_height(_sprite));
+        
+        sprite_delete(_sprite);
+        var _sprite = sprite_add(_imageOutPath, 0, false, false, 0, 0);
+        
+        __MsdfTrace($"Replacing GameMaker glyph textures");
+        
         var _msdGlyphArray = _msdfJSON.glyphs;
+        var _yyGlyphDict = _yyJSON.glyphs;
         
-        buffer_seek(_stringBuffer, buffer_seek_start, 0);
+        surface_set_target(_surface);
+        draw_clear_alpha(c_black, 0);
+        gpu_set_blendmode_ext(bm_one, bm_zero);
+        
         var _i = 0;
         repeat(array_length(_msdGlyphArray))
         {
-            var _glyphData    = _msdGlyphArray[_i];
-            var _glyphUnicode = _glyphData.unicode;
-            var _glyphAtlas   = _glyphData[$ "atlasBounds"];
-            var _glyphPlane   = _glyphData[$ "planeBounds"];
+            var _msdfData    = _msdGlyphArray[_i];
+            var _msdfUnicode = _msdfData.unicode;
+            var _msdfAtlas   = _msdfData[$ "atlasBounds"];
+            var _msdfPlane   = _msdfData[$ "planeBounds"];
             
-            var _glyphAdvance = round(_msdfPointSize*_glyphData.advance);
+            var _gmData = _yyGlyphDict[$ _msdfUnicode];
+            var _gmX      = _gmData.x;
+            var _gmY      = _gmData.y;
+            var _gmWidth  = _gmData.w;
+            var _gmHeight = _gmData.h;
             
-            buffer_write(_stringBuffer, buffer_text, "    \"");
-            buffer_write(_stringBuffer, buffer_text, string(_glyphUnicode));
-            buffer_write(_stringBuffer, buffer_text, "\":{\"character\":");
-            buffer_write(_stringBuffer, buffer_text, string(_glyphUnicode));
-            
-            if ((_glyphAtlas == undefined) || (_glyphPlane == undefined)) //whitespace or non-printable
+            if ((_gmWidth > 0) && (_msdfAtlas != undefined) && (_msdfPlane != undefined)) //whitespace or non-printable
             {
-                buffer_write(_stringBuffer, buffer_text, ",\"h\":");
-                buffer_write(_stringBuffer, buffer_text, string(_msdfHeight));
-                buffer_write(_stringBuffer, buffer_text, ",\"offset\":0,\"shift\":");
-                buffer_write(_stringBuffer, buffer_text, string(_glyphAdvance));
-                buffer_write(_stringBuffer, buffer_text, ",\"w\":0,\"x\":0,\"y\":0,},\n");
-            }
-            else
-            {
-                var _glyphXOffset = floor(-_msdfPointSize*_glyphPlane.left);
-                var _glyphWidth   = _glyphAtlas.right - _glyphAtlas.left - MSDF_ATLAS_FIX - 1 - 2*MSDF_ATLAS_TRIM;
-                var _glyphHeight  = _glyphAtlas.bottom - _glyphAtlas.top - MSDF_ATLAS_FIX - 1 - 2*MSDF_ATLAS_TRIM;
+                var _gmBaselineY = _gmY + _fontSdfSpread + _gmAscender;
+                var _msdfY = floor(_msdfPointSize*_msdfPlane.top) + _gmBaselineY;
                 
-                buffer_write(_stringBuffer, buffer_text, ",\"h\":");
-                buffer_write(_stringBuffer, buffer_text, string(_glyphHeight));
-                buffer_write(_stringBuffer, buffer_text, ",\"offset\":");
-                buffer_write(_stringBuffer, buffer_text, string(-_glyphXOffset));
-                buffer_write(_stringBuffer, buffer_text, ",\"shift\":");
-                buffer_write(_stringBuffer, buffer_text, string(_glyphAdvance));
-                buffer_write(_stringBuffer, buffer_text, ",\"w\":");
-                buffer_write(_stringBuffer, buffer_text, string(_glyphWidth));
-                buffer_write(_stringBuffer, buffer_text, ",\"x\":");
-                buffer_write(_stringBuffer, buffer_text, string(_glyphAtlas.left - 0.5 + MSDF_ATLAS_FIX + MSDF_ATLAS_TRIM));
-                buffer_write(_stringBuffer, buffer_text, ",\"y\":");
-                buffer_write(_stringBuffer, buffer_text, string(_glyphAtlas.top - 0.5 + MSDF_ATLAS_FIX + MSDF_ATLAS_TRIM));
-                buffer_write(_stringBuffer, buffer_text, ",},\n");
+                draw_sprite_part(_sprite, 0,
+                                 _msdfAtlas.left, _msdfAtlas.top,
+                                 _msdfAtlas.right - _msdfAtlas.left, _msdfAtlas.bottom - _msdfAtlas.top,
+                                 _gmX, _msdfY);
             }
             
             ++_i;
         }
         
-        buffer_write(_stringBuffer, buffer_u8, 0x00);
-        var _glyphString = buffer_peek(_stringBuffer, 0, buffer_string);
+        gpu_set_blendmode(bm_normal);
+        surface_reset_target();
         
-        var _searchString = "\n  \"glyphs\":{\n";
-        var _startPos = string_pos(_searchString, _newYYString) + string_length(_searchString);
-        var _endPos = string_pos_ext("\n  },\n", _newYYString, _startPos);
-        _newYYString = string_delete(_newYYString, _startPos, 1 + _endPos - _startPos);
-        _newYYString = string_insert(_glyphString, _newYYString, _startPos);
-        
-        __MsdfTrace("Generating new kerning data");
-        var _msdfKerningArray = _msdfJSON.kerning;
-        
-        var _searchString = "\n  \"kerningPairs\":[";
-        var _startPos = string_pos(_searchString, _newYYString);
-        if (_startPos <= 0)
-        {
-            __MsdfTrace($"Warning! Font \"{font_get_name(_font)}\" ({_font}) has no kerning data");
-            ++_warnings;
-        }
-        else
-        {
-            _startPos += string_length(_searchString);
-            
-            var _endPos = string_pos_ext("\n  ],\n", _newYYString, _startPos);
-            var _stopPos = string_pos_ext("  \"last\":", _newYYString, _startPos);
-            
-            var _write = false;
-            if ((_endPos <= 0) || (_stopPos < _endPos))
-            {
-                __MsdfTrace($"Found start to kerning pair array but not end, searching for empty array");
-                
-                var _substring = string_copy(_newYYString, _startPos, 3);
-                if (string_copy(_newYYString, _startPos, 3) == "],\n")
-                {
-                    __MsdfTrace($"Found empty array, splitting");
-                }
-                else
-                {
-                    __MsdfError($"Could not find kerning array in \"{_yyPath}\"");
-                }
-            }
-            else
-            {
-                _newYYString = string_delete(_newYYString, _startPos, 3 + _endPos - _startPos);
-            }
-            
-            buffer_seek(_stringBuffer, buffer_seek_start, 0);
-            var _i = 0;
-            repeat(array_length(_msdfKerningArray))
-            {
-                var _kerningData = _msdfKerningArray[_i];
-                
-                var _advance = round(_fontPointSize*_kerningData.advance);
-                if (_advance != 0)
-                {
-                    buffer_write(_stringBuffer, buffer_text, "\n    {\"amount\":");
-                    buffer_write(_stringBuffer, buffer_text, string(_advance));
-                    buffer_write(_stringBuffer, buffer_text, ",\"first\":");
-                    buffer_write(_stringBuffer, buffer_text, string(_kerningData.unicode1));
-                    buffer_write(_stringBuffer, buffer_text, ",\"second\":");
-                    buffer_write(_stringBuffer, buffer_text, string(_kerningData.unicode2));
-                    buffer_write(_stringBuffer, buffer_text, ",},");
-                }
-                
-                ++_i;
-            }
-            
-            if (buffer_tell(_stringBuffer) > 0)
-            {
-                buffer_write(_stringBuffer, buffer_text, "\n  ");
-                buffer_write(_stringBuffer, buffer_u8, 0x00);
-                var _kerningString = buffer_peek(_stringBuffer, 0, buffer_string);
-                _newYYString = string_insert(_kerningString, _newYYString, _startPos);
-            }
-        }
-        
-        __MsdfTrace("Generating new ascender offset");
-        var _searchString = "\n  \"ascenderOffset\":";
-        var _startPos = string_pos(_searchString, _newYYString);
-        if (_startPos <= 0)
-        {
-            __MsdfError($"Could not find ascender offset value in \"{_yyPath}\"");
-        }
-        
-        _startPos += string_length(_searchString);
-        var _endPos = string_pos_ext(",\n  ", _newYYString, _startPos);
-        _newYYString = string_delete(_newYYString, _startPos, _endPos - _startPos);
-        _newYYString = string_insert(_msdfAscenderOffset, _newYYString, _startPos);
-        
-        buffer_seek(_stringBuffer, buffer_seek_start, 0);
-        buffer_write(_stringBuffer, buffer_text, _newYYString);
-        buffer_save_ext(_stringBuffer, $"{_fontDirectory}{_fontName}.yy", 0, buffer_tell(_stringBuffer));
-        
-        __MsdfTrace($"Copying new atlas texture to font directory");
-        file_copy(_imageOutPath, $"{_fontDirectory}{_fontName}.png");
+        __MsdfTrace($"Saving new texture");
+        surface_save(_surface, $"{_fontDirectory}{_fontName}.png");
         
         __MsdfTrace($"Cleaning up");
         file_delete(_batchFilePath);
         file_delete(_imageOutPath);
         file_delete(_jsonOutPath);
+        surface_free(_surface);
+        sprite_delete(_sprite);
         
         __MsdfTrace($"Finished converting font \"{font_get_name(_font)}\"");
     
