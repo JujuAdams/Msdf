@@ -12,7 +12,7 @@ function __MsdfSystem()
     _system = {};
     with(_system)
     {
-        __MsdfTrace("Welcome to Msdf by Juju Adams!");
+        __MsdfTrace("Welcome to Msdf by Juju Adams! This is version 1.0.0, 2025-10-27");
     }
     
     return _system;
