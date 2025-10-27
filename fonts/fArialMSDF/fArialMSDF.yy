@@ -1,6 +1,6 @@
 {
   "$GMFont":"",
-  "%Name":"fArial",
+  "%Name":"fArialMSDF",
   "AntiAlias":1,
   "applyKerning":0,
   "ascender":37,
@@ -342,7 +342,7 @@
   "last":0,
   "lineHeight":46,
   "maintainGms1Font":false,
-  "name":"fArial",
+  "name":"fArialMSDF",
   "parent":{
     "name":"msdf",
     "path":"msdf.yyp",

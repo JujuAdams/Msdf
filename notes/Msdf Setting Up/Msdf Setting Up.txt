@@ -20,10 +20,10 @@ Considerations:
 3. MSDF generation only works on Windows. You can build and run a game that uses MSDF fonts on any
    platform, but generating the font textures themselves is only supported on Windows.
 
-4. Font effects are not available unless you modify the native GameMaker shaders. This is a little
-   extra work.
+4. There are some dependencies you'll need to install.
 
-5. There are some dependencies you'll need to install. Again, this is extra work.
+5. Font effects are not available unless you modify the native GameMaker shaders. This is a little
+   extra work.
 
 6. MSDF rendering does not currently support bold or italic font variants. Please make a feature
    request if you need support for font variants.
