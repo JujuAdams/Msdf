@@ -9,6 +9,9 @@ Advantages:
 2. MSDF rendering generally upscales more nicely this means you can render fonts at a lower base
    point size which usually reduces texture memory usage.
 
+3. This tool can be used without requiring any code re-writes. It uses `draw_text` and modified
+   versions of GameMaker's native SDF shaders to render text using the MSDF technique.
+
 
 
 Considerations:
