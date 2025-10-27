@@ -9,6 +9,8 @@ Advantages:
 2. MSDF rendering generally upscales more nicely this means you can render fonts at a lower base
    point size which usually reduces texture memory usage.
 
+3. This tool can be used without requiring any code re-writes. It uses `draw_text` and modified versions of GameMaker's native SDF shaders to render text using the MSDF technique.
+
 
 
 Considerations:
@@ -17,59 +19,41 @@ Considerations:
 
 2. MSDF rendering isn't available for use with `font_add()`.
 
-3. MSDF generation only works on Windows. You can build and run a game that uses MSDF fonts on any
-   platform, but generating the font textures themselves is only supported on Windows.
+3. MSDF generation only works on Windows. You can build and run a game that uses MSDF fonts on any platform, but generating the font textures themselves is only supported on Windows.
 
 4. There are some dependencies you'll need to install.
 
-5. Font effects are not available unless you modify the native GameMaker shaders. This is a little
-   extra work.
+5. Font effects are not available unless you modify the native GameMaker shaders. This is a little extra work.
 
-6. MSDF rendering does not currently support bold or italic font variants. Please make a feature
-   request if you need support for font variants.
+6. MSDF rendering does not currently support bold or italic font variants. Please make a feature request if you need support for font variants.
 
 
 
 Setup:
 
- 1. Download `msdf-atlas-gen` from https://github.com/Chlumsky/msdf-atlas-gen/releases
-    I'm currently using version 1.3 but later versions will probably work too.
+ 1. Download `msdf-atlas-gen` from https://github.com/Chlumsky/msdf-atlas-gen/releases  I'm currently using version 1.3 but later versions will probably work too.
  
  2. Place this executable in a folder called "msdf-atlas-gen" in the root of your project directory.
  
- 3. Download `execute_shell_simple` from https://yellowafterlife.itch.io/gamemaker-execute-shell-simple
-    Please consider a donation to YellowAfterlife. You'll want the GMS 2.3+ version.
+ 3. Download `execute_shell_simple` from https://yellowafterlife.itch.io/gamemaker-execute-shell-simple  Please consider a donation to YellowAfterlife. You'll want the GMS 2.3+ version.
  
  4. Import the `execute_shell_simple` extension into your project.
  
- 5. Find the .ttf source files for the fonts that you want to convert to MSDF and place those .ttf
-    files in the "msdf-atlas-gen" directory you created in step 2.
+ 5. Find the .ttf source files for the fonts that you want to convert to MSDF and place those .ttf files in the "msdf-atlas-gen" directory you created in step 2.
  
- 6. Make sure every font you want to use with MSDF rendering is marked as using SDF in GameMaker's
-    font editor. Additionally, make sure you tag each target font with `msdf` using the IDE's
-    tagging feature.
+ 6. Make sure every font you want to use with MSDF rendering is marked as using SDF in GameMaker's font editor. Additionally, make sure you tag each target font with `msdf` using the IDE's tagging feature.
  
- 7. We'll now call `MsdfUpdateAllFonts()` to convert fonts that you've tagged. You shouldn't call
-    this function every time the game runs. You should only call it when you want to update your
-    fonts.
+ 7. We'll now call `MsdfUpdateAllFonts()` to convert fonts that you've tagged. You shouldn't call this function every time the game runs. You should only call it when you want to update your fonts.
     
- 8. The first few times you call this function you'll probably see an error message. You'll need to
-    re-run the game multiple times to work through all the errors. Make sure to read the errors
-    carefully and follow the instructions.
+ 8. The first few times you call this function you'll probably see an error message. You'll need to re-run the game multiple times to work through all the errors. Make sure to read the errors carefully and follow the instructions.
  
- 9. You'll see a pop-up message when `MsdfUpdateAllFonts()` executes successfully. Your game will
-    then close immediately after clearing the pop-up.
+ 9. You'll see a pop-up message when `MsdfUpdateAllFonts()` executes successfully. Your game will then close immediately after clearing the pop-up.
  
-10. During this process, your IDE may ask you if you want to reload due to changes made to your
-    fonts. Please make sure you click the "Reload" button because "Save" will undo any changes.
+10. During this process, your IDE may ask you if you want to reload due to changes made to your fonts. Please make sure you click the "Reload" button because "Save" will undo any changes.
 
-11. Once you've run `MsdfUpdateAllFonts()` successfully, you can remove that function call. You
-    don't need to call it again unless your fonts change.
+11. Once you've run `MsdfUpdateAllFonts()` successfully, you can remove that function call. You don't need to call it again unless your fonts change.
 
-12. You now have two options: if you want to keep things simple and you don't care about font
-    effects then call `MsdfSetShader()` before drawing text with your font (and reset the shader
-    afterwards with `shader_reset()`). You'll see sharper corners and generally clearer rendering.
-    Example:
+12. You now have two options: if you want to keep things simple and you don't care about font effects then call `MsdfSetShader()` before drawing text with your font (and reset the shader afterwards with `shader_reset()`). You'll see sharper corners and generally clearer rendering. Example:
     
     ```
     MsdfSetShader();
@@ -78,10 +62,7 @@ Setup:
     shader_reset();
     ```
     
-13. However, if you want to use text effects or you don't want to keep setting and resetting
-    shaders, you'll need to replace the standard SDF shaders that the GameMaker runtime uses.
-    Please see the `Msdf Replacement Shader` Note assets for instructions. Once you've done this
-    then you don't need to use `MsdfSetShader()`. Example:
+13. However, if you want to use text effects or you don't want to keep setting and resetting shaders, you'll need to replace the standard SDF shaders that the GameMaker runtime uses. Please see the `Msdf Replacement Shader` Note assets for instructions. Once you've done this then you don't need to use `MsdfSetShader()`. Example:
     
     ```
     draw_set_font(fontMSDF);
