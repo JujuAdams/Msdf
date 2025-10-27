@@ -4,11 +4,12 @@
 //   
 //     C:\ProgramData\GameMakerStudio2\Cache\runtimes\runtime-2024.11.0.227
 // 
-// 2. Then make a copy of the following file:
+// 2. Overwrite the following file with the contents of this Note:
 //   
 //     \bin\ProjectImports\__yy_sdf_shader\shaders\__yy_sdf_shader\__yy_sdf_shader.fsh
 // 
-// 3. Then replace the contents of that file with this shader.
+// 3. If you're looking to build for MacOS or iOS then you'll need to replace the equivalent shader
+//    on your Mac development shader.
 
 varying vec2 v_vTexcoord;
 varying vec4 v_vColour;

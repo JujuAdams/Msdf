@@ -1,6 +1,6 @@
 // Feather disable all
 
-//MsdfUpdateFonts();
+MsdfUpdateAllFonts();
 
 scale = 1;
 

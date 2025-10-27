@@ -2,7 +2,7 @@
 
 var _string = "Hello World";
 
-//MsdfSetShader();
+MsdfSetShader();
 draw_set_font(fArial);
 draw_text_transformed(20, 20, _string, scale, scale, 0);
 shader_reset();

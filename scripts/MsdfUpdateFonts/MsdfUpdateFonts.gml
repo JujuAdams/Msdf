@@ -1,10 +1,10 @@
 // Feather disable all
 
-function MsdfUpdateFonts()
+function MsdfUpdateAllFonts()
 {
     var _time = get_timer();
     
-    __MsdfTrace("Calling `MsdfUpdateFonts()`");
+    __MsdfTrace("Calling `MsdfUpdateAllFonts()`");
     
     var _warnings = 0;
     var _zeroSubstring = ["0"];
@@ -31,13 +31,13 @@ function MsdfUpdateFonts()
     
     if (GM_is_sandboxed)
     {
-        __MsdfError("Please disable file system sandbox for the Windows platform before running `MsdfUpdateFonts()`.\nYou can turn it back on again afterwards.");
+        __MsdfError("Please disable file system sandbox for the Windows platform before running `MsdfUpdateAllFonts()`.\nYou can turn it back on again afterwards.");
     }
     
     var _sacrificialFont = asset_get_index("__MsdfSacrificialAsset");
     if (not font_exists(_sacrificialFont))
     {
-        __MsdfError("Please disable \"Automatically remove unused assets when compiling\" before running `MsdfUpdateFonts()`.\nYou can turn it back on again afterwards.");
+        __MsdfError("Please disable \"Automatically remove unused assets when compiling\" before running `MsdfUpdateAllFonts()`.\nYou can turn it back on again afterwards.");
     }
     
     //Report which fonts we're going to be processing
@@ -341,10 +341,12 @@ function MsdfUpdateFonts()
     //Report state
     if (_warnings > 0)
     {
-        __MsdfTrace($"`MsdfUpdateFonts()` finished ({(get_timer() - _time) / 1000} ms) but with {_warnings} warning(s), please review your debug log");
+        __MsdfLoud($"`MsdfUpdateAllFonts()` finished ({(get_timer() - _time) / 1000} ms) but with {_warnings} warning(s), please review your debug log");
     }
     else
     {
-        __MsdfTrace($"`MsdfUpdateFonts()` finished ({(get_timer() - _time) / 1000} ms) successfully with no warnings");
+        __MsdfLoud($"`MsdfUpdateAllFonts()` finished ({(get_timer() - _time) / 1000} ms) successfully with no warnings");
     }
+    
+    game_end();
 }
